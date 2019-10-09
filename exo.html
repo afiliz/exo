@@ -659,7 +659,7 @@
 			 	renderWithAttenuation: false,
 				showOnlyEarthLikePlanets: false,
 				selectionMode: false,
-				habitablePlanets: 'Display all exoplanets',
+				// habitablePlanets: 'Display all exoplanets',
 				reRender: function() {reRenderScene()},
 				resetCamera: function() {resetCamera()},
 				removeHighlights: function() {
@@ -704,13 +704,13 @@
 				else{ hideLegend(); } 
 			});
 			gui.add(sceneProperties, 'reRender').name("Re-Render Scene");
-			var planetSelect = gui.add(sceneProperties, 'habitablePlanets', 
-				['Display conservatively habitable', 'Display optimistically habitable', 'Display both', 'Display all exoplanets']).name('Habitable Planet Display').listen();
-			planetSelect.onChange(function(value){
-				habitablePlanets = value;
-				console.log(habitablePlanets);
-				reRenderScene();
-			})
+			// var planetSelect = gui.add(sceneProperties, 'habitablePlanets', 
+			// 	['Display conservatively habitable', 'Display optimistically habitable', 'Display both', 'Display all exoplanets']).name('Habitable Planet Display').listen();
+			// planetSelect.onChange(function(value){
+			// 	habitablePlanets = value;
+			// 	console.log(habitablePlanets);
+			// 	reRenderScene();
+			// })
 
 			reloadFolder.open();
 			gui.open();	
