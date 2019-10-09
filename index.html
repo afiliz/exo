@@ -1,0 +1,156 @@
+<!-- CMPS 161: Final Project Online Report -->
+<!-- Coded by Adam Filiz, afiliz@ucsc.edu -->
+<!-- Base css from http://bl.ocks.org/threestory/ed0f322d7bb2e3be8ded -->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Exo Doc.</title>
+
+		<script type="text/javascript" src="js/d3.v3.min.js"></script>
+		<script type="text/javascript" src="js/jquery-3.3.1.js"></script>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+ 	
+		<style type="text/css">
+			
+			
+			#info {
+				margin-left: 15px;
+				margin-right: auto;
+				margin-top: 30px;
+				padding: 30px;
+				padding-right: 120px;
+				background-color: white;
+				box-shadow: 3px 3px 7px #222;
+			}
+
+			#map-info {
+				margin-left: 15px;
+				margin-right: auto;
+				margin-top: 30px;
+				padding: 30px;
+				padding-right: 120px;
+				background-color: white;
+				box-shadow: 3px 3px 7px #222;
+			}
+
+			#map-select {
+				margin-left: 20px;
+				margin-bottom: 400px;
+				background-color: white;
+				margin-top: 30px;
+			}
+
+			body {
+				font-family: "proxima-nova", "Source Sans Pro", sans-serif;
+				margin: 0;
+				background-color: rgb(36, 36, 36);
+				
+			}
+
+			#container {
+				margin-right: auto;
+				margin-top: 30px;
+				padding: 30px;
+				padding-right: 90px;
+				background-color: white;
+				width: 800px;
+				margin-left: 30px;
+				box-shadow: 3px 3px 7px #222;
+			}
+
+			#selections {
+				margin-top: 30px;
+			}
+			
+			h1 {
+				font-size: 24px;
+				margin: 0;
+			}
+
+			p {
+				font-size: 16px;
+				margin: 15px 0 10px 0;
+			}
+
+			a {
+			  color: rgb(23, 99, 197);
+			}
+			
+
+		</style>
+	</head>
+	
+    
+  <body>
+		<div class="container">
+			<div class="row-fluid" id="info">
+				<h5 style="font-size: 48px; text-align: center">
+					<b>Exo: An Exoplanet Visualization</b>
+				</h5>
+				<br>
+				<h2>Final Project Links</h2>
+				<a href="exo.html">Link to Exo/Source Code</a>
+				<br>(Source code viewable using browser developer tools)
+				<br><br>
+				<a href="Final Project Write-Up Adam Filiz.pdf">Technical Write-Up</a>
+				<br><br>
+				<a href="https://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI/nph-nstedAPI?table=exoplanets&format=json">Link to data used</a>
+				<br><br>
+				<a href="https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=planets">Link to data used in gui/csv form</a>
+
+				<br><br>
+				<h2>User Guide</h2>
+				
+				<h1>Loading and Earth</h1>
+				Screen will be black, and legend title will show "Loading..." while data is loading.
+				<br><br>Note that a 3D Earth model is at the center of the visualization. This earth is rotated so that the exoplanet positions are true on the March equinox.
+				<br><br>
+				<h1>Controls</h1>
+				Click on point to get exoplanet info and highlight point.
+				<br>
+				Rotate camera using left mouse button.
+				<br>
+				Zoom in/out using scroll wheel or middle mouse button + move mouse.
+				<br>Pan camera using Shift key + dragging left mouse button.
+				<br><br>
+				<h1>GUI Controls</h1>
+				<img src="images/exo_gui.png">
+				<br>Auto Rotate: Rotates camera automatically when checked. <br><br>
+				Selection Mode: Activates Selection Mode (more info below).<br><br>
+				Remove Highlights: Removes any highlights of any points.<br><br>
+				Hide Tooltips(s): Hides any tooltips that are on-screen.<br><br>
+				Reset Camera: Resets camera to initial position and orientation.<br><br>
+				Render without Attenuation: Requires re-render of the scene. With attenuation, points have their own sizes. Without attenuation, no matter the camera position/angle, points will be sized the same.<br>
+				Note: This is useful if you can't see colors too well from small-sized exoplanets.<br><br>
+				Turn Off Legend: When checked, toggles the legend off, and vice versa.<br><br>
+				Re-Render Scene: Re-renders the scene with new settings.<br><br>
+				Press "Close Controls" to minimize the GUI.
+				<br><br>
+				<h1>Selection Mode</h1>
+				When selection mode is turned on:
+				<br>
+				You can highlight multiple exoplanets. Clicking on an exoplanet highlights it white. Highlighting 2 exoplanets compares the two exoplanets' data. Highlighting more than 2 shows the average of each of the exoplanets' data elements.
+				<br><br>
+				When off:
+				<br>
+				Only one exoplanet can be highlighted at a time. Clicking on an exoplanet highlights it (makes shape bigger) and shows its data in a tooltip.
+
+			</div>
+			<div class="row-fluid" id="map-info">
+				<h5 style="font-size: 32px; text-align: center">Images</h5>
+				<h1>Exo's main display</h1><br>
+				<img width="1000" src="images/exo_main.png">
+				<br><br>
+				<h1>Kepler "Cone" as described in write-up</h1>
+				<img width="1000" src="images/exo_kepler.png">
+				<br><br>
+				<h1>Center of Exo Visualization (lots of null temp and size exoplanets)</h1>
+				<img src="images/exo_center.png">
+				<br><br>
+			<h1>Big and small exoplanets</h1>
+				<img width="1000" src="images/exo_sizes-colors.PNG">
+				<br><br>
+			</div>
+	</body>
+</html>
