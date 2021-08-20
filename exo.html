@@ -236,8 +236,17 @@
 				return RGB/255;
 			}
 
+			// params used
+			// pl_radj = radius?
+			// st_teff = temp
+			// st_dist = stellar distance
+			// ra
+			// dec
+			// pl_name
+			// pl_hostname
+
 			// get the exoplanet data from NASA confirmed exoplanet JSON
-			$.getJSON("https://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI/nph-nstedAPI?table=exoplanets&format=json", function(data){
+			$.getJSON("https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,pl_radj,st_teff,sy_dist,ra,dec+from+ps&format=json", function(data){
 				$('#legend-title').text(function() { return "Legend"});
 				// $legend = "Legend";
 
@@ -248,8 +257,8 @@
 				console.log("Got confirmed exoplanet data");
 				console.log(data[0].ra);
 				console.log(data[0].dec);
-				console.log(data[0].st_dist);
-				console.log(raDecToXYZ(data[0].ra, data[0].dec, data[0].st_dist));
+				console.log(data[0].sy_dist);
+				console.log(raDecToXYZ(data[0].ra, data[0].dec, data[0].sy_dist));
 
 				let maxRadJ = data[0].pl_radj;
 				let minRadJ = data[0].pl_radj;
@@ -261,7 +270,7 @@
 				console.log("Min temp = " + minTemp); 
 
 				for(var i = 0; i < data.length; i++){
-					let cartesianCoord = raDecToXYZ(data[i].ra, data[i].dec, data[i].st_dist * 1);
+					let cartesianCoord = raDecToXYZ(data[i].ra, data[i].dec, data[i].sy_dist * 1);
 					cartesianCoords.push(cartesianCoord);
 				}
 
@@ -289,18 +298,18 @@
 
 				for(var i = 0; i < data.length; i++){
 					if(outlierNames.includes(data[i].pl_name)){ // filter out outlier planets
-							if(data[i].ra != null && data[i].dec != null && data[i].st_dist != null) mappable++;
+							if(data[i].ra != null && data[i].dec != null && data[i].sy_dist != null) mappable++;
 
 							cartesianDist.push(Math.sqrt((cartesianCoords[i][0] * cartesianCoords[i][0]) + (cartesianCoords[i][1] * cartesianCoords[i][1]) + (cartesianCoords[i][2] * cartesianCoords[i][2])));
 
 							// get exoplanet x, y, z coordinates and exoplanet name, stored in js object
-							generated_points.push({name: data[i].pl_hostname, coords: raDecToXYZ(data[i].ra, data[i].dec, data[i].st_dist * 1)});
+							generated_points.push({name: data[i].hostname, coords: raDecToXYZ(data[i].ra, data[i].dec, data[i].sy_dist * 1)});
 							mappable++;
 							continue;
 					}
 					
 					// take out non-mappable data points
-					if(data[i].ra != null && data[i].dec != null && data[i].st_dist != null){
+					if(data[i].ra != null && data[i].dec != null && data[i].sy_dist != null){
 						mappable++;
 
 						// get max/min radius and effective temperature values
@@ -313,12 +322,12 @@
 						cartesianDist.push(Math.sqrt((cartesianCoords[i][0] * cartesianCoords[i][0]) + (cartesianCoords[i][1] * cartesianCoords[i][1]) + (cartesianCoords[i][2] * cartesianCoords[i][2])));
 
 						// get exoplanet x, y, z coordinates and exoplanet name, stored in js object
-						generated_points.push({name: data[i].pl_hostname, coords: raDecToXYZ(data[i].ra, data[i].dec, data[i].st_dist * 1)});
+						generated_points.push({name: data[i].hostname, coords: raDecToXYZ(data[i].ra, data[i].dec, data[i].sy_dist * 1)});
 					}
 					else{
 						countNonMapped++;
 						cartesianDist.push(Math.sqrt((cartesianCoords[i][0] * cartesianCoords[i][0]) + (cartesianCoords[i][1] * cartesianCoords[i][1]) + (cartesianCoords[i][2] * cartesianCoords[i][2])));
-						generated_points.push({name: data[i].pl_hostname, coords: [1000000000000, 1, 1]});
+						generated_points.push({name: data[i].hostname, coords: [1000000000000, 1, 1]});
 					}
 					
 				}
@@ -471,14 +480,14 @@
 							// cartesianDist.push(Math.sqrt((cartesianCoords[i][0] * cartesianCoords[i][0]) + (cartesianCoords[i][1] * cartesianCoords[i][1]) + (cartesianCoords[i][2] * cartesianCoords[i][2])));
 
 							// get exoplanet x, y, z coordinates and exoplanet name, stored in js object
-							generated_points.push({name: exoplanetData[i].pl_hostname, coords: raDecToXYZ(exoplanetData[i].ra, exoplanetData[i].dec, exoplanetData[i].st_dist * 1)});
+							generated_points.push({name: exoplanetData[i].hostname, coords: raDecToXYZ(exoplanetData[i].ra, exoplanetData[i].dec, exoplanetData[i].sy_dist * 1)});
 
 							continue;
 						}
 					}
 					
 					// take out non-mappable exoplanetData points
-					if(exoplanetData[i].ra != null && exoplanetData[i].dec != null && exoplanetData[i].st_dist != null){
+					if(exoplanetData[i].ra != null && exoplanetData[i].dec != null && exoplanetData[i].sy_dist != null){
 
 						// get max/min radius and effective temperature values
 						if((exoplanetData[i].pl_radj != null) && (exoplanetData[i].pl_radj > maxRadJ || maxRadJ == null)) maxRadJ = exoplanetData[i].pl_radj;
@@ -488,14 +497,14 @@
 						if((exoplanetData[i].st_teff != null) && (exoplanetData[i].st_teff > maxTemp || maxTemp == null)) maxTemp = exoplanetData[i].st_teff;
 						if((exoplanetData[i].st_teff != null) && (exoplanetData[i].st_teff < minTemp || minTemp == null)) minTemp = exoplanetData[i].st_teff;
 
-						// let cartesianCoords = raDecToXYZ(exoplanetData[i].ra, exoplanetData[i].dec, exoplanetData[i].st_dist * 2);
+						// let cartesianCoords = raDecToXYZ(exoplanetData[i].ra, exoplanetData[i].dec, exoplanetData[i].sy_dist * 2);
 						// cartesianDist.push(Math.sqrt((cartesianCoords[i][0] * cartesianCoords[i][0]) + (cartesianCoords[i][1] * cartesianCoords[i][1]) + (cartesianCoords[i][2] * cartesianCoords[i][2])));
 
 						// get exoplanet x, y, z coordinates and exoplanet name, stored in js object
-						generated_points.push({name: exoplanetData[i].pl_hostname, coords: raDecToXYZ(exoplanetData[i].ra, exoplanetData[i].dec, exoplanetData[i].st_dist * 2)});
+						generated_points.push({name: exoplanetData[i].hostname, coords: raDecToXYZ(exoplanetData[i].ra, exoplanetData[i].dec, exoplanetData[i].sy_dist * 2)});
 					}
 					else{
-						generated_points.push({name: exoplanetData[i].pl_hostname, coords: [1000000000000, 1, 1]}); // if not mappable, put them outside the visible zone
+						generated_points.push({name: exoplanetData[i].hostname, coords: [1000000000000, 1, 1]}); // if not mappable, put them outside the visible zone
 					}
 
 
