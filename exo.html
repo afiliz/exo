@@ -420,8 +420,6 @@
 					fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
 					depthTest:true,
 					transparent:true
-				}).fail(function(){
-					console.log("Failed to parse JSON data.");
 				});
 
 				console.log(colors);
@@ -429,6 +427,8 @@
 				points = new THREE.Points(pointsGeometry, customShaderMaterial);
 
 				scene.add(points);
+			}).fail(function(){
+				console.log("Failed to parse JSON.");
 			});
 
 			// initialize and animate the scene
