@@ -237,7 +237,7 @@
 			}
 
 			// get the exoplanet data from NASA confirmed exoplanet JSON
-			$.getJSON("https://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI/nph-nstedAPI?table=exoplanets&format=json", function(data){
+			$.getJSON("exo_data_july_2021.json", function(data){
 				$('#legend-title').text(function() { return "Legend"});
 				// $legend = "Legend";
 
@@ -427,6 +427,8 @@
 				points = new THREE.Points(pointsGeometry, customShaderMaterial);
 
 				scene.add(points);
+			}).fail(function(){
+				console.log("Failed to parse JSON.");
 			});
 
 			// initialize and animate the scene
