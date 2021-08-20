@@ -244,199 +244,208 @@
 			// dec
 			// pl_name
 			// pl_hostname
+			console.log("yeet");
+			
+			$.ajax({
+				crossOrigin: true,
+				url: "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,pl_radj,st_teff,sy_dist,ra,dec+from+ps&format=json&callback=?",
+				success: function(data) {
+					$('#legend-title').text(function() { return "Legend"});
+					// $legend = "Legend";
 
-			// get the exoplanet data from NASA confirmed exoplanet JSON
-			$.getJSON("https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,pl_radj,st_teff,sy_dist,ra,dec+from+ps&format=json&callback=?", function(data){
-				$('#legend-title').text(function() { return "Legend"});
-				// $legend = "Legend";
+					exoplanetData = data;
+					console.log(exoplanetData);
+					console.log(data);
 
-				exoplanetData = data;
-				console.log(exoplanetData);
-				console.log(data);
+					console.log("Got confirmed exoplanet data");
+					console.log(data[0].ra);
+					console.log(data[0].dec);
+					console.log(data[0].sy_dist);
+					console.log(raDecToXYZ(data[0].ra, data[0].dec, data[0].sy_dist));
 
-				console.log("Got confirmed exoplanet data");
-				console.log(data[0].ra);
-				console.log(data[0].dec);
-				console.log(data[0].sy_dist);
-				console.log(raDecToXYZ(data[0].ra, data[0].dec, data[0].sy_dist));
+					let maxRadJ = data[0].pl_radj;
+					let minRadJ = data[0].pl_radj;
+					let maxTemp = data[0].st_teff;
+					let minTemp = data[0].st_teff;
+					console.log("Max radj = " + maxRadJ);
+					console.log("Min radj = " + minRadJ);
+					console.log("Max temp = " + maxTemp);
+					console.log("Min temp = " + minTemp); 
 
-				let maxRadJ = data[0].pl_radj;
-				let minRadJ = data[0].pl_radj;
-				let maxTemp = data[0].st_teff;
-				let minTemp = data[0].st_teff;
-				console.log("Max radj = " + maxRadJ);
-				console.log("Min radj = " + minRadJ);
-				console.log("Max temp = " + maxTemp);
-				console.log("Min temp = " + minTemp); 
-
-				for(var i = 0; i < data.length; i++){
-					let cartesianCoord = raDecToXYZ(data[i].ra, data[i].dec, data[i].sy_dist * 1);
-					cartesianCoords.push(cartesianCoord);
-				}
-
-				let countNonMapped = 0; //counts the nonmappable exoplanets
-
-				// in order to filter out outlier temps, get avg temp of all planets, and keep track of planets 
-				// with abnormally high temperature values
-				let allTemps = [];
-				let totalTemp = 0;
-				let tempCount = 0;
-				
-				for (var i = 0; i < data.length; i++){
-					totalTemp += data[i].st_teff;
-					tempCount++;
-				}
-
-				let avgTemp = totalTemp/tempCount;
-				console.log("avg temp:" + avgTemp);
-
-				for (var i = 0; i < data.length; i++){
-					if(data[i].st_teff >= (avgTemp + 15000)){
-						outlierNames.push(data[i].pl_name);
+					for(var i = 0; i < data.length; i++){
+						let cartesianCoord = raDecToXYZ(data[i].ra, data[i].dec, data[i].sy_dist * 1);
+						cartesianCoords.push(cartesianCoord);
 					}
-				}
 
-				for(var i = 0; i < data.length; i++){
-					if(outlierNames.includes(data[i].pl_name)){ // filter out outlier planets
-							if(data[i].ra != null && data[i].dec != null && data[i].sy_dist != null) mappable++;
+					let countNonMapped = 0; //counts the nonmappable exoplanets
+
+					// in order to filter out outlier temps, get avg temp of all planets, and keep track of planets 
+					// with abnormally high temperature values
+					let allTemps = [];
+					let totalTemp = 0;
+					let tempCount = 0;
+					
+					for (var i = 0; i < data.length; i++){
+						totalTemp += data[i].st_teff;
+						tempCount++;
+					}
+
+					let avgTemp = totalTemp/tempCount;
+					console.log("avg temp:" + avgTemp);
+
+					for (var i = 0; i < data.length; i++){
+						if(data[i].st_teff >= (avgTemp + 15000)){
+							outlierNames.push(data[i].pl_name);
+						}
+					}
+
+					for(var i = 0; i < data.length; i++){
+						if(outlierNames.includes(data[i].pl_name)){ // filter out outlier planets
+								if(data[i].ra != null && data[i].dec != null && data[i].sy_dist != null) mappable++;
+
+								cartesianDist.push(Math.sqrt((cartesianCoords[i][0] * cartesianCoords[i][0]) + (cartesianCoords[i][1] * cartesianCoords[i][1]) + (cartesianCoords[i][2] * cartesianCoords[i][2])));
+
+								// get exoplanet x, y, z coordinates and exoplanet name, stored in js object
+								generated_points.push({name: data[i].hostname, coords: raDecToXYZ(data[i].ra, data[i].dec, data[i].sy_dist * 1)});
+								mappable++;
+								continue;
+						}
+						
+						// take out non-mappable data points
+						if(data[i].ra != null && data[i].dec != null && data[i].sy_dist != null){
+							mappable++;
+
+							// get max/min radius and effective temperature values
+							if((data[i].pl_radj != null) && (data[i].pl_radj > maxRadJ || maxRadJ == null)) maxRadJ = data[i].pl_radj;
+							if((data[i].pl_radj != null) && (data[i].pl_radj < minRadJ || minRadJ == null)) minRadJ = data[i].pl_radj;
+
+							if((data[i].st_teff != null) && (data[i].st_teff > maxTemp || maxTemp == null)) maxTemp = data[i].st_teff;
+							if((data[i].st_teff != null) && (data[i].st_teff < minTemp || minTemp == null)) minTemp = data[i].st_teff;
 
 							cartesianDist.push(Math.sqrt((cartesianCoords[i][0] * cartesianCoords[i][0]) + (cartesianCoords[i][1] * cartesianCoords[i][1]) + (cartesianCoords[i][2] * cartesianCoords[i][2])));
 
 							// get exoplanet x, y, z coordinates and exoplanet name, stored in js object
 							generated_points.push({name: data[i].hostname, coords: raDecToXYZ(data[i].ra, data[i].dec, data[i].sy_dist * 1)});
-							mappable++;
-							continue;
+						}
+						else{
+							countNonMapped++;
+							cartesianDist.push(Math.sqrt((cartesianCoords[i][0] * cartesianCoords[i][0]) + (cartesianCoords[i][1] * cartesianCoords[i][1]) + (cartesianCoords[i][2] * cartesianCoords[i][2])));
+							generated_points.push({name: data[i].hostname, coords: [1000000000000, 1, 1]});
+						}
+						
+					}
+
+					console.log("mappable: " + mappable);
+
+					//update legend values
+					$('#cold').text(function(){
+						return "" + minTemp + " K"
+					})
+
+					$('#hot').text(function(){
+						return "" + maxTemp + " K"
+					})
+
+					//update legend values
+					$('#small').text(function(){
+						return "" + minRadJ + " radJ"
+					})
+
+					$('#big').text(function(){
+						return "" + maxRadJ + " radJ"
+					})
+
+					console.log("Max radj = " + maxRadJ);
+					console.log("Min radj = " + minRadJ); 
+					console.log("Max temp = " + maxTemp);
+					console.log("Min temp = " + minTemp); 
+
+					// store all colors, sizes, and vertices of the planets
+					let colors = [];
+					let sizes = [];
+					let verts = [];
+
+					let count = 0;
+
+					// get size and color values for each planet
+					for(var i = 0; i < data.length; i++){
+						if(outlierNames.includes(data[i].pl_name)){
+								let size = scalePlanetJRadius(data[i].pl_radj, 10, 50, minRadJ, maxRadJ);
+								sizes.push(size);
+								pointSizes.push(size);
+								
+								let newColor = [0, 255, 0];
+								let finalColor = new THREE.Color(convertRGBToScaleOne(newColor[0]), convertRGBToScaleOne(newColor[1]), convertRGBToScaleOne(newColor[2]));
+								colors.push(finalColor.r, finalColor.g, finalColor.b);
+								pointColors.push(finalColor);
+
+								continue;
+						}
+
+
+						// set exoplanet size and color vals
+						let size = scalePlanetJRadius(data[i].pl_radj, 10, 50, minRadJ, maxRadJ);
+						sizes.push(size);
+						pointSizes.push(size);
+
+						let percent = (data[i].st_teff - minTemp)/(maxTemp - minTemp);
+						percents.push(percent);
+
+						// interpolate between blue and red. blue = min, red = max
+						let newColor = null;
+						if(data[i].st_teff != null) {
+							newColor = twoColorHeatMap(data[i].st_teff, minTemp, maxTemp, [0, 0, 255], [255, 0, 0]);
+							//console.log("Current color: " + newColor);
+						}
+						else newColor = [255, 255, 0];
+						
+
+						let finalColor = new THREE.Color(convertRGBToScaleOne(newColor[0]), convertRGBToScaleOne(newColor[1]), convertRGBToScaleOne(newColor[2]))
+
+						colors.push(finalColor.r, finalColor.g, finalColor.b);
+						pointColors.push(finalColor);
 					}
 					
-					// take out non-mappable data points
-					if(data[i].ra != null && data[i].dec != null && data[i].sy_dist != null){
-						mappable++;
-
-						// get max/min radius and effective temperature values
-						if((data[i].pl_radj != null) && (data[i].pl_radj > maxRadJ || maxRadJ == null)) maxRadJ = data[i].pl_radj;
-						if((data[i].pl_radj != null) && (data[i].pl_radj < minRadJ || minRadJ == null)) minRadJ = data[i].pl_radj;
-
-						if((data[i].st_teff != null) && (data[i].st_teff > maxTemp || maxTemp == null)) maxTemp = data[i].st_teff;
-						if((data[i].st_teff != null) && (data[i].st_teff < minTemp || minTemp == null)) minTemp = data[i].st_teff;
-
-						cartesianDist.push(Math.sqrt((cartesianCoords[i][0] * cartesianCoords[i][0]) + (cartesianCoords[i][1] * cartesianCoords[i][1]) + (cartesianCoords[i][2] * cartesianCoords[i][2])));
-
-						// get exoplanet x, y, z coordinates and exoplanet name, stored in js object
-						generated_points.push({name: data[i].hostname, coords: raDecToXYZ(data[i].ra, data[i].dec, data[i].sy_dist * 1)});
+					// add vert coordinates into verts array
+					for (let datum of generated_points) {
+						verts.push(datum.coords[0], datum.coords[1], datum.coords[2]);
 					}
-					else{
-						countNonMapped++;
-						cartesianDist.push(Math.sqrt((cartesianCoords[i][0] * cartesianCoords[i][0]) + (cartesianCoords[i][1] * cartesianCoords[i][1]) + (cartesianCoords[i][2] * cartesianCoords[i][2])));
-						generated_points.push({name: data[i].hostname, coords: [1000000000000, 1, 1]});
-					}
-					
+
+					console.log(colors);
+						console.log(sizes);
+						console.log(verts);
+
+					// send color, vert, and size values to custom shader
+					let pointsGeometry = new THREE.BufferGeometry();
+					pointsGeometry.addAttribute("position",new THREE.BufferAttribute(new Float32Array(verts),3));
+					pointsGeometry.addAttribute("inputColor",new THREE.BufferAttribute(new Float32Array(colors),3));
+					pointsGeometry.addAttribute("size",new THREE.BufferAttribute(new Float32Array(sizes),1));
+					pointsGeometry.computeBoundingSphere();
+
+					customShaderMaterial = new THREE.ShaderMaterial({
+						uniforms: {
+							amplitude: {value:1.0},
+							color: {value: new THREE.Color(0xFFFFFF)},
+							texture: {value: circle_sprite}
+						},
+						vertexShader: document.getElementById( 'vertexshader' ).textContent,
+						fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+						depthTest:true,
+						transparent:true
+					});
+
+					console.log(colors);
+
+					points = new THREE.Points(pointsGeometry, customShaderMaterial);
+
+					scene.add(points);
 				}
-
-				console.log("mappable: " + mappable);
-
-				//update legend values
-				$('#cold').text(function(){
-					return "" + minTemp + " K"
-				})
-
-				$('#hot').text(function(){
-					return "" + maxTemp + " K"
-				})
-
-				//update legend values
-				$('#small').text(function(){
-					return "" + minRadJ + " radJ"
-				})
-
-				$('#big').text(function(){
-					return "" + maxRadJ + " radJ"
-				})
-
-				console.log("Max radj = " + maxRadJ);
-				console.log("Min radj = " + minRadJ); 
-				console.log("Max temp = " + maxTemp);
-				console.log("Min temp = " + minTemp); 
-
-				// store all colors, sizes, and vertices of the planets
-				let colors = [];
-				let sizes = [];
-				let verts = [];
-
-				let count = 0;
-
-				// get size and color values for each planet
-				for(var i = 0; i < data.length; i++){
-					if(outlierNames.includes(data[i].pl_name)){
-							let size = scalePlanetJRadius(data[i].pl_radj, 10, 50, minRadJ, maxRadJ);
-							sizes.push(size);
-							pointSizes.push(size);
-							
-							let newColor = [0, 255, 0];
-							let finalColor = new THREE.Color(convertRGBToScaleOne(newColor[0]), convertRGBToScaleOne(newColor[1]), convertRGBToScaleOne(newColor[2]));
-							colors.push(finalColor.r, finalColor.g, finalColor.b);
-							pointColors.push(finalColor);
-
-							continue;
-					}
-
-
-					// set exoplanet size and color vals
-					let size = scalePlanetJRadius(data[i].pl_radj, 10, 50, minRadJ, maxRadJ);
-					sizes.push(size);
-					pointSizes.push(size);
-
-					let percent = (data[i].st_teff - minTemp)/(maxTemp - minTemp);
-					percents.push(percent);
-
-					// interpolate between blue and red. blue = min, red = max
-					let newColor = null;
-					if(data[i].st_teff != null) {
-						newColor = twoColorHeatMap(data[i].st_teff, minTemp, maxTemp, [0, 0, 255], [255, 0, 0]);
-						//console.log("Current color: " + newColor);
-					}
-					else newColor = [255, 255, 0];
-					
-
-					let finalColor = new THREE.Color(convertRGBToScaleOne(newColor[0]), convertRGBToScaleOne(newColor[1]), convertRGBToScaleOne(newColor[2]))
-
-					colors.push(finalColor.r, finalColor.g, finalColor.b);
-					pointColors.push(finalColor);
-				}
-				
-				// add vert coordinates into verts array
-				for (let datum of generated_points) {
-					verts.push(datum.coords[0], datum.coords[1], datum.coords[2]);
-				}
-
-				console.log(colors);
-					console.log(sizes);
-					console.log(verts);
-
-				// send color, vert, and size values to custom shader
-				let pointsGeometry = new THREE.BufferGeometry();
-				pointsGeometry.addAttribute("position",new THREE.BufferAttribute(new Float32Array(verts),3));
-				pointsGeometry.addAttribute("inputColor",new THREE.BufferAttribute(new Float32Array(colors),3));
-				pointsGeometry.addAttribute("size",new THREE.BufferAttribute(new Float32Array(sizes),1));
-				pointsGeometry.computeBoundingSphere();
-
-				customShaderMaterial = new THREE.ShaderMaterial({
-					uniforms: {
-						amplitude: {value:1.0},
-						color: {value: new THREE.Color(0xFFFFFF)},
-						texture: {value: circle_sprite}
-					},
-					vertexShader: document.getElementById( 'vertexshader' ).textContent,
-					fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-					depthTest:true,
-					transparent:true
-				});
-
-				console.log(colors);
-
-				points = new THREE.Points(pointsGeometry, customShaderMaterial);
-
-				scene.add(points);
 			});
+
+			// // get the exoplanet data from NASA confirmed exoplanet JSON
+			// $.getJSON("https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,pl_radj,st_teff,sy_dist,ra,dec+from+ps&format=json&callback=?", function(data){
+				
+			// });
 
 			// initialize and animate the scene
 			init();
