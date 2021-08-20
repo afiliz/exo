@@ -246,7 +246,7 @@
 			// pl_hostname
 
 			// get the exoplanet data from NASA confirmed exoplanet JSON
-			$.getJSON("https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,pl_radj,st_teff,sy_dist,ra,dec+from+ps&format=json", function(data){
+			$.getJSON("https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,pl_radj,st_teff,sy_dist,ra,dec+from+ps&format=json&callback=?", function(data){
 				$('#legend-title').text(function() { return "Legend"});
 				// $legend = "Legend";
 
